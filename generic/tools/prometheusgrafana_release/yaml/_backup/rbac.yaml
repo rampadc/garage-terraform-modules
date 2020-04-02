@@ -1,0 +1,70 @@
+# The Prometheus operator expects 2 Service Accounts with correct permissions
+# It seems the permissions are already available via pre-installed ClusterRole
+# We just need to create the service accounts in the prometheus namespace and corresponding service bindings 
+#
+# 1. prometheus-operator 
+# will reuse a pre-installed ClusterRole prometheus-operator
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: prometheus-operator
+  name: prometheus-operator
+---
+# Using pre-configured cluster role for prom operator instead DIY
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-operator-replace-me
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-operator
+subjects:
+- kind: ServiceAccount
+  name: prometheus-operator
+  namespace: replace-me  
+# 2. prometheus-k8s
+# will reuse a pre-installed ClusterRole prometheus-k8s
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: prometheus-k8s
+  name: prometheus-k8s
+---  
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-k8s-replace-me
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-k8s-applications
+subjects:
+- kind: ServiceAccount
+  name: prometheus-k8s
+  namespace: replace-me
+#
+#
+# pre-installed prometheus-k8s cluster role did not work 
+--- 
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: prometheus-k8s-applications
+rules:
+- apiGroups: [""]
+  resources:
+  - nodes
+  - services
+  - endpoints
+  - pods
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  verbs: ["get"]
+- nonResourceURLs: ["/metrics"]
+  verbs: ["get"]
