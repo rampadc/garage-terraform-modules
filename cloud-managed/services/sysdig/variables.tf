@@ -41,3 +41,9 @@ variable "namespace" {
   description = "The namespace where the agent should be deployed"
   default     = "ibm-observe"
 }
+
+variable "exists" {
+  type        = bool
+  description = "Flag indicating that an instance of the service already exists"
+  default     = false
+}
