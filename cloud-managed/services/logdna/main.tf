@@ -17,6 +17,8 @@ locals {
 
 // LogDNA - Logging
 resource "ibm_resource_instance" "logdna_instance" {
+  count             = var.exists ? 0 : 1
+
   name              = "${replace(local.name_prefix, "/[^a-zA-Z0-9_\\-\\.]/", "")}-logdna"
   service           = "logdna"
   plan              = var.plan
@@ -31,9 +33,18 @@ resource "ibm_resource_instance" "logdna_instance" {
   }
 }
 
+data "ibm_resource_instance" "logdna_instance" {
+  depends_on        = [ibm_resource_instance.logdna_instance]
+
+  name              = "${replace(local.name_prefix, "/[^a-zA-Z0-9_\\-\\.]/", "")}-logdna"
+  resource_group_id = data.ibm_resource_group.tools_resource_group.id
+  location          = local.resource_location
+  service           = "logdna"
+}
+
 resource "ibm_resource_key" "logdna_instance_key" {
-  name                 = "${ibm_resource_instance.logdna_instance.name}-key"
-  resource_instance_id = ibm_resource_instance.logdna_instance.id
+  name                 = "${data.ibm_resource_instance.logdna_instance.name}-key"
+  resource_instance_id = data.ibm_resource_instance.logdna_instance.id
   role                 = local.role
 
   //User can increase timeouts 

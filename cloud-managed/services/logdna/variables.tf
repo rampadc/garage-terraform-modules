@@ -47,3 +47,9 @@ variable "tags" {
   description = "Tags that should be applied to the service"
   default     = []
 }
+
+variable "exists" {
+  type        = bool
+  description = "Flag indicating that logdna instance already exists"
+  default     = false
+}
