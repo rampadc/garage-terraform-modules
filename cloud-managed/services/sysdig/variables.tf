@@ -47,3 +47,9 @@ variable "exists" {
   description = "Flag indicating that an instance of the service already exists"
   default     = false
 }
+
+variable "name" {
+  type        = string
+  description = "The name that should be used for the service, particularly for an existing service. If not provided then then name will be generated as {name_prefix}-{service}"
+  default     = ""
+}
