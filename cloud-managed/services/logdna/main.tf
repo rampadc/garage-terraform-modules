@@ -13,13 +13,14 @@ locals {
   name_prefix       = var.name_prefix != "" ? var.name_prefix : var.resource_group_name
   role              = "Manager"
   resource_location = var.resource_location
+  name              = var.name != "" ? var.name : "${replace(local.name_prefix, "/[^a-zA-Z0-9_\\-\\.]/", "")}-logdna"
 }
 
 // LogDNA - Logging
 resource "ibm_resource_instance" "logdna_instance" {
   count             = var.exists ? 0 : 1
 
-  name              = "${replace(local.name_prefix, "/[^a-zA-Z0-9_\\-\\.]/", "")}-logdna"
+  name              = local.name
   service           = "logdna"
   plan              = var.plan
   location          = local.resource_location
@@ -36,7 +37,7 @@ resource "ibm_resource_instance" "logdna_instance" {
 data "ibm_resource_instance" "logdna_instance" {
   depends_on        = [ibm_resource_instance.logdna_instance]
 
-  name              = "${replace(local.name_prefix, "/[^a-zA-Z0-9_\\-\\.]/", "")}-logdna"
+  name              = local.name
   resource_group_id = data.ibm_resource_group.tools_resource_group.id
   location          = local.resource_location
   service           = "logdna"

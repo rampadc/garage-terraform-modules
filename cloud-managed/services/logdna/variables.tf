@@ -53,3 +53,9 @@ variable "exists" {
   description = "Flag indicating that logdna instance already exists"
   default     = false
 }
+
+variable "name" {
+  type        = string
+  description = "The name that should be used for the service, particularly when connecting to an existing service. If not provided then the name will be defaulted to {name prefix}-{service}"
+  default     = ""
+}
