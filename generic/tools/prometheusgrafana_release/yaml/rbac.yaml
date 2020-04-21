@@ -8,22 +8,7 @@ metadata:
     app.kubernetes.io/name: prometheus-k8s
   name: prometheus-k8s
 ---  
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: prometheus-k8s-replace-me
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: prometheus-k8s-applications
-subjects:
-- kind: ServiceAccount
-  name: prometheus-k8s
-  namespace: replace-me
-#
-#
 # pre-installed prometheus-k8s cluster role did not work 
---- 
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
@@ -42,3 +27,16 @@ rules:
   verbs: ["get"]
 - nonResourceURLs: ["/metrics"]
   verbs: ["get"]
+apiVersion: rbac.authorization.k8s.io/v1beta1
+---
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus-k8s-replace-me
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus-k8s-applications
+subjects:
+- kind: ServiceAccount
+  name: prometheus-k8s
+  namespace: replace-me

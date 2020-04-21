@@ -8,7 +8,6 @@ variable "cluster_config_file_path" {
 variable "monitoring_tools_namespace" {
   type        = string
   description = "The namespace where prometheus and grafana are installed"
-  default     = "monitoring-tools-3"
 }
 
 variable "liberty_dashboard" {

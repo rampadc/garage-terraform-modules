@@ -12,6 +12,5 @@ oc delete -f ${YAML_FILE} -n ${NAMESPACE} || true
 sleep 10
 echo '>>> Prometheus operator in target namespace is deleted'
 
-echo "*** deleting target namespace for monitoring tools stack.."
-oc delete project "${NAMESPACE}" 1> /dev/null 2> /dev/null || true
-echo '>>> monoring tools namespace is deleted'
+echo "*** NOT deleting the namespace used by the operator as it is may be shared with other tools .."
+
