@@ -5,10 +5,9 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd -P)
 ACCESS_KEY="$1"
 ENDPOINT="$2"
 NAMESPACE="$3"
+CLUSTER_TYPE="$4"
 
-if [[ -n "${KUBECONFIG_IKS}" ]]; then
-   export KUBECONFIG="${KUBECONFIG_IKS}"
-else
+if [[ "${CLUSTER_TYPE}" != "kubernetes" ]]; then
    OPENSHIFT="-op"
 fi
 
