@@ -30,7 +30,7 @@ YAML_FILE=${MODULE_DIR}/yaml/prometheus-operator.yaml
 oc apply -f ${YAML_FILE} -n ${NAMESPACE}
 
 sleep 30
-until oc get crd prometheuses.monitoring.coreos.com 1> /dev/null 2> /dev/null 
+until oc get crd prometheuses.monitoring.coreos.com -n ${NAMESPACE} 1> /dev/null 2> /dev/null 
 do
     echo '>>> waiting for Prometheus operator availability'
     sleep 30
