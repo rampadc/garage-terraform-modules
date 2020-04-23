@@ -43,9 +43,9 @@ locals {
   config_namespace      = "default"
   config_file_path      = var.cluster_type == "kubernetes" ? data.ibm_container_cluster_config.cluster.config_file_path : ""
   cluster_type_tag      = var.cluster_type == "kubernetes" ? "iks" : "ocp"
-  server_url            = data.local_file.server_url
-  ingress_hostname      = data.local_file.ingress_hostname
-  tls_secret            = data.local_file.ingress_secret
+  server_url            = data.local_file.server_url.content
+  ingress_hostname      = data.local_file.ingress_hostname.content
+  tls_secret            = data.local_file.ingress_secret.content
   openshift_versions    = {
   for version in data.ibm_container_cluster_versions.cluster_versions.valid_openshift_versions:
   substr(version, 0, 1) => "${version}_openshift"
