@@ -124,7 +124,7 @@ resource "null_resource" "get_server_url" {
   ]
 
   provisioner "local-exec" {
-    command = "ibmcloud ks cluster get --cluster $${CLUSTER_NAME} | grep \"Master URL\" | sed -E \"s/Master URL: +(.*)$/\\1/g\" | xargs echo -n > $${FILE}"
+    command = "ibmcloud ks cluster get --cluster $${CLUSTER_NAME} | grep \"Public Service Endpoint URL\" | sed -E \"s/Public Service Endpoint URL: +(.*)$/\\1/g\" | xargs echo -n > $${FILE}"
 
     environment = {
       CLUSTER_NAME = local.cluster_name
