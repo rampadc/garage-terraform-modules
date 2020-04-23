@@ -31,6 +31,9 @@ locals {
   cluster_config_dir    = "${var.kubeconfig_download_dir}/.kube"
   cluster_type_file     = "${path.cwd}/.tmp/cluster_type.val"
   cluster_version_file  = "${path.cwd}/.tmp/cluster_version.val"
+  server_url_file       = "${path.cwd}/.tmp/server_url.val"
+  ingress_hostname_file = "${path.cwd}/.tmp/ingress_hostnane.val"
+  ingress_secret_file   = "${path.cwd}/.tmp/ingress_hostnane.val"
   registry_url_file     = "${path.cwd}/.tmp/registry_url.val"
   registry_url          = data.local_file.registry_url.content
   name_prefix           = var.name_prefix != "" ? var.name_prefix : var.resource_group_name
@@ -40,9 +43,9 @@ locals {
   config_namespace      = "default"
   config_file_path      = var.cluster_type == "kubernetes" ? data.ibm_container_cluster_config.cluster.config_file_path : ""
   cluster_type_tag      = var.cluster_type == "kubernetes" ? "iks" : "ocp"
-  server_url            = data.ibm_container_cluster.config.public_service_endpoint_url
-  ingress_hostname      = data.ibm_container_cluster.config.ingress_hostname
-  tls_secret            = data.ibm_container_cluster.config.ingress_secret
+  server_url            = data.local_file.server_url
+  ingress_hostname      = data.local_file.ingress_hostname
+  tls_secret            = data.local_file.ingress_secret
   openshift_versions    = {
   for version in data.ibm_container_cluster_versions.cluster_versions.valid_openshift_versions:
   substr(version, 0, 1) => "${version}_openshift"
@@ -72,14 +75,6 @@ resource "ibm_container_cluster" "create_cluster" {
   private_vlan_id   = var.private_vlan_id
   public_vlan_id    = var.public_vlan_id
   tags              = [local.cluster_type_tag]
-}
-
-data "ibm_container_cluster" "config" {
-  depends_on = [ibm_container_cluster.create_cluster]
-
-  cluster_name_id   = local.cluster_name
-  alb_type          = "public"
-  resource_group_id = data.ibm_resource_group.resource_group.id
 }
 
 resource "null_resource" "create_cluster_config_dir" {
@@ -120,6 +115,72 @@ data "local_file" "cluster_version" {
   depends_on = [null_resource.get_cluster_version]
 
   filename = local.cluster_version_file
+}
+
+resource "null_resource" "get_server_url" {
+  depends_on = [
+    data.ibm_container_cluster_config.cluster,
+    null_resource.ibmcloud_login,
+  ]
+
+  provisioner "local-exec" {
+    command = "ibmcloud ks cluster get --cluster $${CLUSTER_NAME} | grep \"Master URL\" | sed -E \"s/Master URL: +(.*)$/\\1/g\" | xargs echo -n > $${FILE}"
+
+    environment = {
+      CLUSTER_NAME = local.cluster_name
+      FILE         = local.server_url_file
+    }
+  }
+}
+
+data "local_file" "server_url" {
+  depends_on = [null_resource.get_server_url]
+
+  filename = local.server_url_file
+}
+
+resource "null_resource" "get_ingress_hostname" {
+  depends_on = [
+    data.ibm_container_cluster_config.cluster,
+    null_resource.ibmcloud_login,
+  ]
+
+  provisioner "local-exec" {
+    command = "ibmcloud ks cluster get --cluster $${CLUSTER_NAME} | grep \"Ingress Subdomain\" | sed -E \"s/Ingress Subdomain: +(.*)$/\\1/g\" | xargs echo -n > $${FILE}"
+
+    environment = {
+      CLUSTER_NAME = local.cluster_name
+      FILE         = local.ingress_hostname_file
+    }
+  }
+}
+
+data "local_file" "ingress_hostname" {
+  depends_on = [null_resource.get_ingress_hostname]
+
+  filename = local.ingress_hostname_file
+}
+
+resource "null_resource" "get_ingress_secret" {
+  depends_on = [
+    data.ibm_container_cluster_config.cluster,
+    null_resource.ibmcloud_login,
+  ]
+
+  provisioner "local-exec" {
+    command = "ibmcloud ks cluster get --cluster $${CLUSTER_NAME} | grep \"Ingress Secret\" | sed -E \"s/Ingress Secret: +(.*)$/\\1/g\" | xargs echo -n > $${FILE}"
+
+    environment = {
+      CLUSTER_NAME = local.cluster_name
+      FILE         = local.ingress_secret_file
+    }
+  }
+}
+
+data "local_file" "ingress_secret" {
+  depends_on = [null_resource.get_ingress_secret]
+
+  filename = local.ingress_secret_file
 }
 
 resource "null_resource" "oc_login" {
