@@ -56,11 +56,6 @@ resource "null_resource" "add_ssc_openshift" {
   count      = var.cluster_type != "kubernetes" ? 1 : 0
 
   provisioner "local-exec" {
-    command = "${path.module}/scripts/add-sccs-to-user.sh ${jsonencode(var.sscs)}"
-
-    environment={
-      SERVICE_ACCOUNT_NAME = var.service_account_name
-      NAMESPACE            = var.namespace
-    }
+    command = "${path.module}/scripts/add-sccs-to-user.sh ${var.namespace} ${var.service_account_name} ${jsonencode(var.sscs)}"
   }
 }
