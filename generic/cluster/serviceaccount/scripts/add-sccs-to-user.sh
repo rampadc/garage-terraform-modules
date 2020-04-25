@@ -2,9 +2,11 @@
 
 SCC_LIST_DELIM=$(echo "${1}" | sed -E 's/[[](.*)[]]/\1/g' | sed 's/\"//g')
 
-oc get serviceaccount "${SERVICE_ACCOUNT_NAME}" -n "${NAMESPACE}"
+kubectl get serviceaccount "${SERVICE_ACCOUNT_NAME}" -n "${NAMESPACE}"
 
 IFS=',' read -ra SCC_LIST <<< "$SCC_LIST_DELIM"
 for scc in "${SCC_LIST[@]}"; do
-  oc adm policy add-scc-to-user "${scc}" -n "${NAMESPACE}" -z "${SERVICE_ACCOUNT_NAME}"
+  kubectl patch scc "${scc}" \
+    --type=json \
+    -p="[{\"op\": \"add\", \"path\": \"/users/-\", \"value\": \"system:serviceaccount:${NAMESPACE}:${SERVICE_ACCOUNT_NAME}\"}]"
 done
